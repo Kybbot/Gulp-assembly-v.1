@@ -11,12 +11,19 @@ const uglify = require('gulp-uglify');
 
 function css() {
 	return src('build/sass/**/*.sass')
-	.pipe(sass({ outputStyle: 'expanded' }).on("error", notify.onError()))	
+	.pipe(sass({ outputStyle: 'compressed' }).on("error", notify.onError()))	
 	.pipe(atoprefixer(['last 15 versions']))
 	.pipe(cleanCss())
 	.pipe(rename({ suffix: '.min', prefix : '' }))
 	.pipe(dest('build/css'))
 	.pipe(browserSync.stream());
+}
+
+function fullCss() {
+	return src('build/sass/**/*.sass')
+	.pipe(sass({ outputStyle: 'expanded' }).on("error", notify.onError()))	
+	.pipe(atoprefixer(['last 15 versions']))
+	.pipe(dest('build/css'))
 }
 
 function js() {
@@ -49,6 +56,7 @@ function serve() {
 }
 
 exports.css = css;
+exports.fullCss = fullCss;
 exports.js = js;
 exports.serve = serve;
 exports.default = parallel(serve, css, js);
