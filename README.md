@@ -8,3 +8,4 @@ Gulp-assembly-v.1 это сборка включающая в себя: Gulp, Bo
 
 ## Gulp tasks:
 1. gulp: запускает обычный gulp task(serve, css, js);
+2. gulp fullCss: создает развернутый css файл; 
