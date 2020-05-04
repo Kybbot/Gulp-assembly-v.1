@@ -28,7 +28,6 @@ function fullCss() {
 
 function js() {
 	return src([
-		'build/libs/jquery/jquery-3.3.1.min.js',
 		'build/js/main.js',
 	])
 	.pipe(babel({
