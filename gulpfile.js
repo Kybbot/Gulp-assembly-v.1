@@ -1,61 +1,93 @@
-const { src, dest, parallel, series, watch } = require('gulp');
-const browserSync = require('browser-sync').create();
-const atoprefixer = require('gulp-autoprefixer');
+const gulp = require('gulp');
+const autoprefixer = require('autoprefixer');
 const babel = require('gulp-babel');
-const cleanCss = require('gulp-clean-css');
-const concat = require('gulp-concat');
-const notify = require('gulp-notify');
-const rename = require('gulp-rename');
-const sass = require('gulp-sass');
+const browserSync = require('browser-sync');
+const htmlmin = require('gulp-htmlmin');
 const uglify = require('gulp-uglify');
 
-function css() {
-	return src('build/sass/**/*.sass')
-	.pipe(sass({ outputStyle: 'compressed' }).on("error", notify.onError()))	
-	.pipe(atoprefixer(['last 15 versions']))
-	.pipe(cleanCss())
-	.pipe(rename({ suffix: '.min', prefix : '' }))
-	.pipe(dest('build/css'))
+const postcss = require('gulp-postcss');
+const csso = require('postcss-csso');
+const pimport = require('postcss-import');
+
+const html = () => {
+	return gulp.src('src/*.html')
+		.pipe(htmlmin({
+			removeComments: true,
+			collapseWhitespace: true,
+		}))
+		.pipe(gulp.dest('dist'))
+		.pipe(browserSync.stream());
+};
+exports.html = html;
+
+const css = () => {
+	return gulp.src('src/css/index.css')
+	.pipe(postcss([
+		pimport,
+		autoprefixer(),
+		csso,
+	]))
+	.pipe(gulp.dest('dist/css/'))
 	.pipe(browserSync.stream());
 }
+exports.css = css;
 
-function fullCss() {
-	return src('build/sass/**/*.sass')
-	.pipe(sass({ outputStyle: 'expanded' }).on("error", notify.onError()))	
-	.pipe(atoprefixer(['last 15 versions']))
-	.pipe(dest('build/css'))
-}
-
-function js() {
-	return src([
-		'build/js/main.js',
-	])
+const js = () => {
+	return gulp.src('src/js/main.js')
 	.pipe(babel({
-		presets: ['env']
+		presets: ['@babel/preset-env']
 	}))
 	.pipe(uglify())
-	.pipe(concat('scripts.min.js'))
-	.pipe(dest('build/js'));
+	.pipe(gulp.dest('dist/js/'))
+	.pipe(browserSync.stream());
 }
+exports.js = js;
 
-function reload(done) {
-	browserSync.reload();
-	done();
-} 
+const copy = () => {
+	return gulp.src([
+			'src/fonts/**/*',
+			'src/img/**/*',
+			'src/libs/**/*',
+		], {
+			base: 'src'
+		})
+		.pipe(gulp.dest('dist'))
+		.pipe(browserSync.stream({
+			once: true
+		}));
+};
+exports.copy = copy;
 
-function serve() {
+const server = () => {
 	browserSync.init({
 		server: {
-			baseDir: 'build'
+			baseDir: 'dist'
 		}
 	});
-	watch('build/sass/**/*.sass', css);
-	watch('build/*.html').on('change', browserSync.reload);
-	watch('build/js/**/main.js', series(js, reload));
 }
+exports.server = server;
 
-exports.css = css;
-exports.fullCss = fullCss;
-exports.js = js;
-exports.serve = serve;
-exports.default = parallel(serve, css, js);
+const watch = () => {
+	gulp.watch('src/*.html', gulp.series(html));
+	gulp.watch('src/css/**/*.css', gulp.series(css));
+	gulp.watch('src/js/**/*.js', gulp.series(js));
+	gulp.watch([
+		'src/fonts/**/*',
+		'src/img/**/*',
+		'src/libs/**/*',
+	], gulp.series(copy));
+}
+exports.watch = watch;
+
+exports.default =  gulp.series(
+	gulp.parallel(
+		html,
+		css,
+		js,
+		copy,
+	),
+	gulp.parallel(
+		watch,
+		server,
+	),
+);

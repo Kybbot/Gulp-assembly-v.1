@@ -1,0 +1,5 @@
+button {
+	background-color: var(--main-color);
+	color: grey;
+	border-radius: 5px;
+}

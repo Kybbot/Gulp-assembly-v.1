@@ -3,3 +3,4 @@ yarn.lock
 .DS_Store
 Thumbs.db
 .git
+dist
