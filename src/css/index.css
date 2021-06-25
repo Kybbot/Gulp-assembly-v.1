@@ -1,12 +1,4 @@
-@import "fonts.css";
-@import "vars.css";
-@import "components/components.css";
-@import "media.css";
-
-body {
-	color: var(--main-color);
-}
-
-footer {
-	display: flex;
-}
+@import 'fonts.css';
+@import 'vars.css';
+@import 'components/components.css';
+@import 'media.css';
